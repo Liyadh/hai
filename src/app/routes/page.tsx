@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -27,6 +28,7 @@ import {
   TrendingUp,
   User,
   Users,
+  FileText
 } from "lucide-react";
 import {
   Select,
@@ -76,6 +78,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const sampleRoutes = [
     { id: 1, name: "Gudur Main → College", status: "Active", stops: 12, distance: "28.5 km", duration: "75 min" },
@@ -93,6 +96,13 @@ const sampleStops = [
 export default function RoutesPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
+  const { toast } = useToast();
+  
+  const [selectedRouteId, setSelectedRouteId] = React.useState<number | null>(1);
+  const [isEditingRoute, setIsEditingRoute] = React.useState(false);
+  const [editableRouteData, setEditableRouteData] = React.useState<any | null>(null);
+
+  const selectedRoute = sampleRoutes.find(r => r.id === selectedRouteId);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -102,6 +112,34 @@ export default function RoutesPage() {
       }
     }
   }, []);
+  
+  const handleEditRoute = (routeId: number) => {
+    if (isEditingRoute && routeId !== selectedRouteId) {
+      if (!confirm("You have unsaved changes. Are you sure you want to switch and discard them?")) {
+        return;
+      }
+    }
+    const routeToEdit = sampleRoutes.find(r => r.id === routeId);
+    setSelectedRouteId(routeId);
+    setIsEditingRoute(true);
+    setEditableRouteData(JSON.parse(JSON.stringify(routeToEdit))); // Deep copy
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingRoute(false);
+    setEditableRouteData(null);
+  };
+  
+  const handleSaveChanges = () => {
+    // API call would go here
+    console.log("Saving changes for route:", editableRouteData);
+    toast({
+      title: "Route Updated",
+      description: `Changes for route "${editableRouteData?.name}" have been saved.`,
+    });
+    setIsEditingRoute(false);
+    // Here you would update the main `sampleRoutes` state with the saved data
+  };
 
   const navItems = [
     { name: "Home", icon: Home, href: "/dashboard" },
@@ -110,7 +148,7 @@ export default function RoutesPage() {
     { name: "Routes", icon: RouteIcon, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -229,7 +267,7 @@ export default function RoutesPage() {
                             <CardTitle>Routes List</CardTitle>
                         </CardHeader>
                         <CardContent>
-                             <Accordion type="single" collapsible defaultValue="item-1">
+                             <Accordion type="single" collapsible defaultValue="item-1" value={`item-${selectedRouteId}`} onValueChange={(value) => setSelectedRouteId(Number(value.replace('item-', '')))}>
                                 {sampleRoutes.map(route => (
                                     <AccordionItem value={`item-${route.id}`} key={route.id}>
                                         <AccordionTrigger className="font-medium">
@@ -251,7 +289,7 @@ export default function RoutesPage() {
                                                 <span>{route.duration}</span>
                                             </div>
                                              <div className="flex gap-2">
-                                                <Button variant="outline" size="sm" className="w-full">
+                                                <Button variant="outline" size="sm" className="w-full" onClick={() => handleEditRoute(route.id)}>
                                                     <Edit className="h-3 w-3 mr-2" /> Edit
                                                 </Button>
                                                 <Button variant="outline" size="icon" className="h-8 w-8">
@@ -275,20 +313,35 @@ export default function RoutesPage() {
                      <div className="border-t">
                         <CardHeader>
                              <div className="flex items-center justify-between">
-                                <div>
-                                    <CardTitle>Route Details: Gudur Main → College</CardTitle>
-                                    <CardDescription>Drag and drop stops to reorder.</CardDescription>
-                                </div>
-                                <Select defaultValue="AP01AB1234">
-                                  <SelectTrigger className="w-[180px]">
-                                    <SelectValue placeholder="Assign Bus" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="AP01AB1234">Bus AP01AB1234</SelectItem>
-                                    <SelectItem value="AP01AB5678">Bus AP01AB5678</SelectItem>
-                                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                                {isEditingRoute ? (
+                                    <>
+                                        <div>
+                                            <CardTitle>Editing Route: {editableRouteData?.name}</CardTitle>
+                                            <CardDescription>Drag and drop stops or edit timings.</CardDescription>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
+                                            <Button onClick={handleSaveChanges}>Save Changes</Button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div>
+                                            <CardTitle>Route Details: {selectedRoute?.name}</CardTitle>
+                                            <CardDescription>Drag and drop stops to reorder.</CardDescription>
+                                        </div>
+                                        <Select defaultValue="AP01AB1234">
+                                          <SelectTrigger className="w-[180px]">
+                                            <SelectValue placeholder="Assign Bus" />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="AP01AB1234">Bus AP01AB1234</SelectItem>
+                                            <SelectItem value="AP01AB5678">Bus AP01AB5678</SelectItem>
+                                            <SelectItem value="unassigned">Unassigned</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                    </>
+                                )}
                              </div>
                         </CardHeader>
                         <CardContent>
@@ -308,11 +361,19 @@ export default function RoutesPage() {
                                     {sampleStops.map(stop => (
                                         <TableRow key={stop.id}>
                                             <TableCell>{stop.id}</TableCell>
-                                            <TableCell className="font-medium">{stop.name}</TableCell>
-                                            <TableCell>{stop.distance}</TableCell>
+                                            <TableCell className="font-medium">
+                                                {isEditingRoute ? <Input defaultValue={stop.name} className="h-8"/> : stop.name}
+                                            </TableCell>
+                                            <TableCell>
+                                                {isEditingRoute ? <Input defaultValue={stop.distance} className="h-8 w-24"/> : stop.distance}
+                                            </TableCell>
                                             <TableCell>{stop.cumulative}</TableCell>
-                                            <TableCell>{stop.time}</TableCell>
-                                            <TableCell>{stop.wait}</TableCell>
+                                            <TableCell>
+                                                {isEditingRoute ? <Input type="time" defaultValue={stop.time.includes('AM') ? '06:30' : '18:30'} className="h-8"/> : stop.time}
+                                            </TableCell>
+                                            <TableCell>
+                                                {isEditingRoute ? <Input defaultValue={stop.wait} className="h-8 w-20"/> : stop.wait}
+                                            </TableCell>
                                             <TableCell className="text-right">
                                                 <Button variant="ghost" size="icon" className="h-8 w-8">
                                                     <MoreVertical className="h-4 w-4" />
@@ -331,3 +392,5 @@ export default function RoutesPage() {
     </SidebarProvider>
   );
 }
+
+    
