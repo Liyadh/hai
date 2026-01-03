@@ -383,18 +383,28 @@ export default function BusesPage() {
                            <FormItem className="space-y-3">
                             <FormLabel>Status</FormLabel>
                             <FormControl>
-                               <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select status" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="Active">🟢 Active</SelectItem>
-                                  <SelectItem value="Maintenance">🟡 Maintenance</SelectItem>
-                                  <SelectItem value="Inactive">⚫ Inactive</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <div className="flex gap-2">
+                                {(["Active", "Maintenance", "Inactive"] as const).map((status) => (
+                                  <Button
+                                    key={status}
+                                    type="button"
+                                    variant={field.value === status ? "default" : "outline"}
+                                    onClick={() => form.setValue("status", status)}
+                                    className={cn("flex-1 justify-start", {
+                                      "bg-green-100 border-green-300 text-green-800 hover:bg-green-200": field.value === status && status === "Active",
+                                      "bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200": field.value === status && status === "Maintenance",
+                                      "bg-gray-100 border-gray-300 text-gray-800 hover:bg-gray-200": field.value === status && status === "Inactive",
+                                    })}
+                                  >
+                                    <span className={cn("w-2 h-2 rounded-full mr-2", {
+                                      "bg-green-500": status === "Active",
+                                      "bg-yellow-500": status === "Maintenance",
+                                      "bg-gray-500": status === "Inactive",
+                                    })}></span>
+                                    {status}
+                                  </Button>
+                                ))}
+                              </div>
                             </FormControl>
                             <FormMessage />
                            </FormItem>
