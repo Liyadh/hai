@@ -1,4 +1,4 @@
-# **App Name**: West Gudur Admin Portal
+# **App Name**:  Admin Portal
 
 ## Core Features:
 

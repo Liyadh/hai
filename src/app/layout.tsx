@@ -1,9 +1,10 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'West Gudur Admin Portal',
+  title: 'NBKR Admin Portal',
   description: 'Login to the College Bus Management Dashboard.',
 };
 

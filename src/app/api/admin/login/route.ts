@@ -8,24 +8,24 @@ export async function POST(req: Request) {
     await new Promise(resolve => setTimeout(resolve, 1000));
 
     // Hardcoded credentials for demonstration
-    if (email === 'admin@college.edu' && password === 'password123') {
+    if (email === 'admin@gmail.com' && password === '12345678') {
       return NextResponse.json({
         token: 'fake-jwt-token-for-admin',
         user: {
           role: 'admin',
           name: 'College Admin',
-          email: 'admin@college.edu',
+          email: 'admin@gmail.com',
         },
       });
     }
 
-    if (email === 'superadmin@college.edu' && password === 'superpassword123') {
+    if (email === 'superadmin@gmail.com' && password === '123456') {
         return NextResponse.json({
           token: 'fake-jwt-token-for-superadmin',
           user: {
             role: 'superadmin',
             name: 'Super Admin',
-            email: 'superadmin@college.edu',
+            email: 'superadmin@gmail.com',
           },
         });
       }

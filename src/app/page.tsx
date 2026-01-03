@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -130,7 +131,7 @@ export default function LoginPage() {
               <Bus className="w-10 h-10 text-primary-foreground" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              West Gudur Admin
+              NBKR
             </h1>
             <p className="text-muted-foreground mt-2">
               Sign in to the Bus Management Dashboard
