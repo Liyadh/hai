@@ -26,6 +26,7 @@ import {
   Route,
   Search,
   Settings,
+  Trash,
   TrendingUp,
   User,
   Users,
@@ -507,6 +508,5 @@ export default function StudentsPage() {
     </SidebarProvider>
   );
 }
-
 
     
