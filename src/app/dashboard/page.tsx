@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
-  AlertTriangle,
   ArrowUp,
   Bus,
   ChevronDown,
@@ -132,6 +132,7 @@ const alerts = [
 
 export default function DashboardPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
+  const pathname = usePathname();
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -155,6 +156,7 @@ export default function DashboardPage() {
   ];
 
   const getInitials = (name: string) => {
+    if (!name) return "";
     return name
       .split(" ")
       .map((n) => n[0])
@@ -165,11 +167,11 @@ export default function DashboardPage() {
 
   return (
     <SidebarProvider>
-      <Sidebar side="left" collapsible="icon" className="border-r">
+      <Sidebar side="left" collapsible="icon" className="border-r bg-primary text-primary-foreground">
         <SidebarHeader>
           <div className="flex h-10 items-center justify-center gap-2">
-            <Bus className="h-6 w-6 text-sidebar-foreground" />
-            <span className="text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
+            <Bus className="h-6 w-6 text-primary-foreground" />
+            <span className="text-lg font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
               Bus Dashboard
             </span>
           </div>
@@ -182,7 +184,7 @@ export default function DashboardPage() {
                   <Link href={item.href}>
                     <SidebarMenuButton
                       tooltip={item.name}
-                      isActive={item.name === "Home"}
+                      isActive={pathname.startsWith(item.href)}
                       asChild
                     >
                       <div>
@@ -272,7 +274,7 @@ export default function DashboardPage() {
               value="78%"
               secondaryValue="Fleet average"
               icon={Users}
-              iconBgColor="bg-green-500"
+              iconBgColor-="bg-green-500"
               trend="+5%"
               trendDirection="up"
             />
