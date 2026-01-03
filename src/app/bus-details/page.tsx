@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -75,6 +76,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
+import { EditComplianceDialog } from "@/components/feature/EditComplianceDialog";
 
 
 const documents = [
@@ -97,6 +99,7 @@ const getStatusInfo = (status: string) => {
 export default function BusDetailsPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
+  const [isComplianceEditOpen, setIsComplianceEditOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -129,6 +132,12 @@ export default function BusDetailsPage() {
   };
 
   const pageTitle = navItems.find(item => item.href === pathname)?.name || "Bus Details";
+  
+  const handleComplianceUpdated = (updatedCompliance: any) => {
+    console.log("Compliance data updated:", updatedCompliance);
+    // Here you would update your main state
+  };
+
 
   return (
     <SidebarProvider>
@@ -283,7 +292,12 @@ export default function BusDetailsPage() {
                         </TabsList>
                         <TabsContent value="documents" className="flex-1 mt-6">
                             <Card>
-                                <CardHeader><CardTitle>Compliance Documents</CardTitle></CardHeader>
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                  <CardTitle>Compliance Documents</CardTitle>
+                                  <Button variant="outline" size="sm" onClick={() => setIsComplianceEditOpen(true)}>
+                                    <Edit className="mr-2 h-4 w-4" /> Edit
+                                  </Button>
+                                </CardHeader>
                                 <CardContent>
                                     <Accordion type="single" collapsible defaultValue="item-0">
                                         {documents.map((doc, index) => {
@@ -364,6 +378,15 @@ export default function BusDetailsPage() {
             </div>
         </main>
       </SidebarInset>
+       <EditComplianceDialog
+        open={isComplianceEditOpen}
+        onClose={() => setIsComplianceEditOpen(false)}
+        busId={"bus_123"}
+        compliance={documents}
+        onUpdated={handleComplianceUpdated}
+      />
     </SidebarProvider>
   );
 }
+
+    
