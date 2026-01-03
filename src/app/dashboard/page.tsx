@@ -20,6 +20,7 @@ import {
   TrendingUp,
   User,
   Users,
+  FileText,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -71,6 +72,7 @@ type KpiCardProps = {
   trend?: string;
   trendDirection?: "up" | "down";
   iconBgColor: string;
+  href: string;
 };
 
 function KpiCard({
@@ -81,46 +83,49 @@ function KpiCard({
   trend,
   trendDirection,
   iconBgColor,
+  href,
 }: KpiCardProps) {
   return (
-    <Card className="transition-all hover:scale-[1.02] hover:shadow-md">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        <div
-          className={cn(
-            "flex h-8 w-8 items-center justify-center rounded-lg",
-            iconBgColor
-          )}
-        >
-          <Icon className="h-5 w-5 text-white" />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{secondaryValue}</p>
-        {trend && (
-          <div className="mt-2 flex items-center gap-1 text-xs">
-            <span
-              className={cn(
-                "flex items-center gap-1",
-                trendDirection === "up" ? "text-green-600" : "text-red-600"
-              )}
+    <Link href={href} className="block">
+        <Card className="transition-all hover:scale-[1.02] hover:shadow-md">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+            {title}
+            </CardTitle>
+            <div
+            className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg",
+                iconBgColor
+            )}
             >
-              <ArrowUp
+            <Icon className="h-5 w-5 text-white" />
+            </div>
+        </CardHeader>
+        <CardContent>
+            <div className="text-3xl font-bold">{value}</div>
+            <p className="text-xs text-muted-foreground">{secondaryValue}</p>
+            {trend && (
+            <div className="mt-2 flex items-center gap-1 text-xs">
+                <span
                 className={cn(
-                  "h-4 w-4",
-                  trendDirection === "down" && "rotate-180"
+                    "flex items-center gap-1",
+                    trendDirection === "up" ? "text-green-600" : "text-red-600"
                 )}
-              />
-              {trend}
-            </span>
-            <span className="text-muted-foreground">this week</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+                >
+                <ArrowUp
+                    className={cn(
+                    "h-4 w-4",
+                    trendDirection === "down" && "rotate-180"
+                    )}
+                />
+                {trend}
+                </span>
+                <span className="text-muted-foreground">this week</span>
+            </div>
+            )}
+        </CardContent>
+        </Card>
+    </Link>
   );
 }
 
@@ -151,7 +156,7 @@ export default function DashboardPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -262,13 +267,15 @@ export default function DashboardPage() {
               iconBgColor="bg-blue-500"
               trend="+3"
               trendDirection="up"
+              href="/trips"
             />
             <KpiCard
               title="Live Alerts"
               value="2"
-              secondaryValue="2 critical, 0 warning"
+              secondaryValue="1 critical, 1 warning"
               icon={Siren}
               iconBgColor="bg-yellow-500"
+              href="#"
             />
             <KpiCard
               title="Avg Occupancy"
@@ -278,6 +285,7 @@ export default function DashboardPage() {
               iconBgColor="bg-green-500"
               trend="+5%"
               trendDirection="up"
+              href="/students"
             />
             <KpiCard
               title="Total Students"
@@ -285,6 +293,7 @@ export default function DashboardPage() {
               secondaryValue="+12 new registrations"
               icon={GraduationCap}
               iconBgColor="bg-purple-500"
+              href="/students"
             />
           </div>
 
@@ -380,6 +389,3 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
-
-
-    
