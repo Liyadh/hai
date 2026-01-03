@@ -168,8 +168,8 @@ export default function DashboardPage() {
       <Sidebar side="left" collapsible="icon" className="border-r">
         <SidebarHeader>
           <div className="flex h-10 items-center justify-center gap-2">
-            <Bus className="h-6 w-6 text-sidebar-primary-foreground" />
-            <span className="text-lg font-semibold text-sidebar-primary-foreground group-data-[collapsible=icon]:hidden">
+            <Bus className="h-6 w-6 text-sidebar-foreground" />
+            <span className="text-lg font-semibold text-sidebar-foreground group-data-[collapsible=icon]:hidden">
               Bus Dashboard
             </span>
           </div>
