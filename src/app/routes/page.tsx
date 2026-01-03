@@ -79,30 +79,51 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { NewRouteDialog } from "@/components/feature/NewRouteDialog";
 
-const sampleRoutes = [
-    { id: 1, name: "Gudur Main → College", status: "Active", stops: 12, distance: "28.5 km", duration: "75 min" },
-    { id: 2, name: "Rural Area → College", status: "Scheduled", stops: 15, distance: "35.2 km", duration: "90 min" },
-    { id: 3, name: "City Center → College", status: "Inactive", stops: 8, distance: "15.0 km", duration: "45 min" },
+type Stop = {
+    id: number;
+    name: string;
+    distance: string;
+    cumulative: string;
+    time: string;
+    wait: string;
+};
+
+type Route = {
+    id: number;
+    name: string;
+    status: "Active" | "Scheduled" | "Inactive";
+    stops: number;
+    distance: string;
+    duration: string;
+    stopDetails?: Stop[];
+};
+
+
+const sampleRoutes: Route[] = [
+    { id: 1, name: "Gudur Main → College", status: "Active", stops: 12, distance: "28.5 km", duration: "75 min", stopDetails: [
+        { id: 1, name: "Gudur Bus Stand", distance: "0 km", cumulative: "0 km", time: "06:30 AM", wait: "2 min" },
+        { id: 2, name: "Gandhi Circle", distance: "2.3 km", cumulative: "2.3 km", time: "06:35 AM", wait: "3 min" },
+        { id: 3, name: "Rural Village", distance: "8.1 km", cumulative: "10.4 km", time: "06:48 AM", wait: "2 min" },
+        { id: 12, name: "College Gate", distance: "3.2 km", cumulative: "28.5 km", time: "07:45 AM", wait: "-" },
+    ]},
+    { id: 2, name: "Rural Area → College", status: "Scheduled", stops: 15, distance: "35.2 km", duration: "90 min", stopDetails: [] },
+    { id: 3, name: "City Center → College", status: "Inactive", stops: 8, distance: "15.0 km", duration: "45 min", stopDetails: [] },
 ];
-
-const sampleStops = [
-    { id: 1, name: "Gudur Bus Stand", distance: "0 km", cumulative: "0 km", time: "06:30 AM", wait: "2 min" },
-    { id: 2, name: "Gandhi Circle", distance: "2.3 km", cumulative: "2.3 km", time: "06:35 AM", wait: "3 min" },
-    { id: 3, name: "Rural Village", distance: "8.1 km", cumulative: "10.4 km", time: "06:48 AM", wait: "2 min" },
-    { id: 12, name: "College Gate", distance: "3.2 km", cumulative: "28.5 km", time: "07:45 AM", wait: "-" },
-]
 
 export default function RoutesPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
   const { toast } = useToast();
   
+  const [routes, setRoutes] = React.useState<Route[]>(sampleRoutes);
   const [selectedRouteId, setSelectedRouteId] = React.useState<number | null>(1);
   const [isEditingRoute, setIsEditingRoute] = React.useState(false);
-  const [editableRouteData, setEditableRouteData] = React.useState<any | null>(null);
+  const [editableRouteData, setEditableRouteData] = React.useState<Route | null>(null);
+  const [isNewRouteOpen, setIsNewRouteOpen] = React.useState(false);
 
-  const selectedRoute = sampleRoutes.find(r => r.id === selectedRouteId);
+  const selectedRoute = routes.find(r => r.id === selectedRouteId);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -119,7 +140,7 @@ export default function RoutesPage() {
         return;
       }
     }
-    const routeToEdit = sampleRoutes.find(r => r.id === routeId);
+    const routeToEdit = routes.find(r => r.id === routeId);
     setSelectedRouteId(routeId);
     setIsEditingRoute(true);
     setEditableRouteData(JSON.parse(JSON.stringify(routeToEdit))); // Deep copy
@@ -137,9 +158,31 @@ export default function RoutesPage() {
       title: "Route Updated",
       description: `Changes for route "${editableRouteData?.name}" have been saved.`,
     });
+    
+    if (editableRouteData) {
+        setRoutes(prevRoutes => prevRoutes.map(r => r.id === editableRouteData.id ? editableRouteData : r));
+    }
+
     setIsEditingRoute(false);
-    // Here you would update the main `sampleRoutes` state with the saved data
+    setEditableRouteData(null);
   };
+  
+  const handleRouteCreated = (newRouteData: Omit<Route, 'id'>) => {
+    const newRoute: Route = {
+        id: routes.length > 0 ? Math.max(...routes.map(r => r.id)) + 1 : 1,
+        ...newRouteData,
+        distance: newRouteData.distance || "N/A",
+        duration: newRouteData.duration || "N/A",
+        stopDetails: newRouteData.stopDetails?.map((s, i) => ({ ...s, id: i+1})) || [],
+    };
+    setRoutes(prev => [newRoute, ...prev]);
+    setSelectedRouteId(newRoute.id);
+    toast({
+        title: "Route Created",
+        description: `New route "${newRoute.name}" has been added.`
+    });
+    setIsNewRouteOpen(false);
+  }
 
   const navItems = [
     { name: "Home", icon: Home, href: "/dashboard" },
@@ -254,7 +297,7 @@ export default function RoutesPage() {
                     <h1 className="text-2xl font-bold">Route Management</h1>
                     <p className="text-sm text-muted-foreground">Manage all college bus routes and stops.</p>
                 </div>
-                <Button size="sm">
+                <Button size="sm" onClick={() => setIsNewRouteOpen(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     New Route
                 </Button>
@@ -268,7 +311,7 @@ export default function RoutesPage() {
                         </CardHeader>
                         <CardContent>
                              <Accordion type="single" collapsible defaultValue="item-1" value={`item-${selectedRouteId}`} onValueChange={(value) => setSelectedRouteId(Number(value.replace('item-', '')))}>
-                                {sampleRoutes.map(route => (
+                                {routes.map(route => (
                                     <AccordionItem value={`item-${route.id}`} key={route.id}>
                                         <AccordionTrigger className="font-medium">
                                             <div className="flex items-center gap-3">
@@ -358,9 +401,9 @@ export default function RoutesPage() {
                                   </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {sampleStops.map(stop => (
+                                    {(isEditingRoute ? editableRouteData?.stopDetails : selectedRoute?.stopDetails)?.map((stop, index) => (
                                         <TableRow key={stop.id}>
-                                            <TableCell>{stop.id}</TableCell>
+                                            <TableCell>{index + 1}</TableCell>
                                             <TableCell className="font-medium">
                                                 {isEditingRoute ? <Input defaultValue={stop.name} className="h-8"/> : stop.name}
                                             </TableCell>
@@ -389,8 +432,11 @@ export default function RoutesPage() {
             </div>
         </main>
       </SidebarInset>
+       <NewRouteDialog
+        open={isNewRouteOpen}
+        onClose={() => setIsNewRouteOpen(false)}
+        onCreated={handleRouteCreated}
+      />
     </SidebarProvider>
   );
 }
-
-    
