@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -181,7 +180,7 @@ export default function StudentsPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -396,8 +395,7 @@ export default function StudentsPage() {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Students</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
+            <Card><CardHeader className="flex flex-row items-center justify-between pb-2"><CardTitle className="text-sm font-medium">Total Students</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader>
                 <CardContent><div className="text-2xl font-bold">450</div></CardContent>
             </Card>
             <Card>
@@ -508,5 +506,3 @@ export default function StudentsPage() {
     </SidebarProvider>
   );
 }
-
-    

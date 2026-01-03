@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -174,7 +173,7 @@ export default function DriversPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -357,7 +356,7 @@ export default function DriversPage() {
                         </FormItem>
                       </div>
                       <div className="space-y-4">
-                        <h3 className="text-lg font-medium border-b pb-2">License & Experience</h3>
+                        <h3 className="text-lg font-medium border-b pb-2">License &amp; Experience</h3>
                         <FormField control={form.control} name="licenseNo" render={({ field }) => (
                             <FormItem><FormLabel>License No.</FormLabel><FormControl><Input placeholder="DLXXXXXXXX" {...field} /></FormControl><FormMessage /></FormItem>
                         )} />
@@ -388,7 +387,7 @@ export default function DriversPage() {
                         </FormItem>
                       </div>
                        <div className="space-y-4">
-                        <h3 className="text-lg font-medium border-b pb-2">Assignment & Status</h3>
+                        <h3 className="text-lg font-medium border-b pb-2">Assignment &amp; Status</h3>
                          <FormField control={form.control} name="assignedBus" render={({ field }) => (
                            <FormItem>
                             <FormLabel>Assigned Bus</FormLabel>
@@ -599,6 +598,3 @@ export default function DriversPage() {
     </SidebarProvider>
   );
 }
-
-
-    

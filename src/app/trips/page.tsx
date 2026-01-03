@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -17,6 +16,7 @@ import {
   CircleDot,
   Clock,
   Dot,
+  FileText,
   Home,
   Map,
   MapPin,
@@ -117,7 +117,7 @@ export default function TripsPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -385,5 +385,3 @@ export default function TripsPage() {
     </SidebarProvider>
   );
 }
-
-    

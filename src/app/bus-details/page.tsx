@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -279,7 +278,7 @@ export default function BusDetailsPage() {
                      <Tabs defaultValue="documents" className="h-full flex flex-col">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="documents">Documents</TabsTrigger>
-                            <TabsTrigger value="photos">Photos & Maintenance</TabsTrigger>
+                            <TabsTrigger value="photos">Photos &amp; Maintenance</TabsTrigger>
                             <TabsTrigger value="history">Trip History</TabsTrigger>
                         </TabsList>
                         <TabsContent value="documents" className="flex-1 mt-6">
@@ -329,7 +328,7 @@ export default function BusDetailsPage() {
                         </TabsContent>
                         <TabsContent value="photos" className="flex-1 mt-6">
                             <Card>
-                                <CardHeader><CardTitle>Photos & Maintenance</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Photos &amp; Maintenance</CardTitle></CardHeader>
                                 <CardContent>
                                     <h3 className="font-semibold mb-4">Photo Gallery</h3>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Bus,
   ChevronDown,
   Home,
@@ -21,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -45,8 +47,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { FileText } from "lucide-react";
 
-export default function PlaceholderPage() {
+export default function SettingsPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
 
@@ -66,7 +72,7 @@ export default function PlaceholderPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -169,16 +175,74 @@ export default function PlaceholderPage() {
         </header>
 
         <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="flex items-center justify-center h-full">
-                <Card className="w-full max-w-lg">
-                    <CardHeader>
-                        <CardTitle className="text-2xl">Page Under Construction</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">The '{pageTitle}' page is currently being built. Please check back later.</p>
-                    </CardContent>
-                </Card>
-            </div>
+             <Card className="w-full max-w-4xl mx-auto">
+                <CardHeader>
+                    <CardTitle className="text-3xl">Settings</CardTitle>
+                    <CardDescription>Manage your account and application settings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                   <Tabs defaultValue="profile" className="w-full">
+                      <TabsList className="grid w-full grid-cols-4">
+                        <TabsTrigger value="profile">Profile</TabsTrigger>
+                        <TabsTrigger value="notifications">Notifications</TabsTrigger>
+                        <TabsTrigger value="system">System</TabsTrigger>
+                        <TabsTrigger value="security">Security</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="profile" className="mt-6">
+                        <Card>
+                            <CardHeader><CardTitle>Profile Information</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <p>This section will contain user profile settings.</p>
+                            </CardContent>
+                        </Card>
+                      </TabsContent>
+                      <TabsContent value="notifications" className="mt-6">
+                         <Card>
+                            <CardHeader><CardTitle>Notification Preferences</CardTitle></CardHeader>
+                            <CardContent className="space-y-6">
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="email-notifications" className="text-base">Email Notifications</Label>
+                                        <p className="text-sm text-muted-foreground">Receive important updates via email.</p>
+                                    </div>
+                                    <Switch id="email-notifications" defaultChecked />
+                                </div>
+                                <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="sms-alerts" className="text-base">SMS Alerts</Label>
+                                        <p className="text-sm text-muted-foreground">Get critical alerts on your phone.</p>
+                                    </div>
+                                    <Switch id="sms-alerts" />
+                                </div>
+                                 <div className="flex items-center justify-between rounded-lg border p-4">
+                                    <div className="space-y-0.5">
+                                        <Label htmlFor="push-notifications" className="text-base">Push Notifications</Label>
+                                        <p className="text-sm text-muted-foreground">Enable browser push notifications.</p>
+                                    </div>
+                                    <Switch id="push-notifications" defaultChecked />
+                                </div>
+                            </CardContent>
+                        </Card>
+                      </TabsContent>
+                      <TabsContent value="system" className="mt-6">
+                         <Card>
+                            <CardHeader><CardTitle>System Settings</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <p>This section will contain system-wide settings.</p>
+                            </CardContent>
+                        </Card>
+                      </TabsContent>
+                       <TabsContent value="security" className="mt-6">
+                         <Card>
+                            <CardHeader><CardTitle>Security</CardTitle></CardHeader>
+                            <CardContent className="space-y-4">
+                                <p>This section will contain security-related settings.</p>
+                            </CardContent>
+                        </Card>
+                      </TabsContent>
+                    </Tabs>
+                </CardContent>
+            </Card>
         </main>
       </SidebarInset>
     </SidebarProvider>

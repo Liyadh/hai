@@ -1,4 +1,3 @@
-
 "use client";
 
 import * as React from "react";
@@ -16,6 +15,7 @@ import {
   Circle,
   Eye,
   FilePen,
+  FileText,
   Filter,
   GraduationCap,
   Home,
@@ -176,7 +176,7 @@ export default function BusesPage() {
     { name: "Routes", icon: Route, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
-    { name: "Bus Details", icon: Bus, href: "/bus-details" },
+    { name: "Bus Details", icon: FileText, href: "/bus-details" },
     { name: "Reports", icon: TrendingUp, href: "/reports" },
     { name: "Settings", icon: Settings, href: "/settings" },
   ];
@@ -378,7 +378,7 @@ export default function BusesPage() {
                        </div>
                     </div>
                      <div className="space-y-4">
-                       <h3 className="text-lg font-medium">Status & Availability</h3>
+                       <h3 className="text-lg font-medium">Status &amp; Availability</h3>
                         <FormField control={form.control} name="status" render={({ field }) => (
                            <FormItem className="space-y-3">
                             <FormLabel>Status</FormLabel>
@@ -562,6 +562,3 @@ export default function BusesPage() {
     </SidebarProvider>
   );
 }
-
-
-    
