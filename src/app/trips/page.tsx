@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -33,6 +34,7 @@ import {
   User,
   Users,
   X,
+  Loader2,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -77,6 +79,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { ScheduleTripDialog } from "@/components/feature/ScheduleTripDialog";
 
 const liveTrips = [
     { id: 1, busNo: "AP01AB1234", route: "Gudur -> College", progress: 67, stop: "8/12", eta: "07:23 AM", students: "42/50", issues: [], status: "ontime" },
@@ -100,6 +104,9 @@ const schedule = [
 export default function TripsPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [isScheduleOpen, setIsScheduleOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -109,6 +116,32 @@ export default function TripsPage() {
       }
     }
   }, []);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    toast({
+        title: "Updating Trips...",
+        description: "Requesting latest data for all trips.",
+    });
+    setTimeout(() => {
+        setIsRefreshing(false);
+        toast({
+            title: "Refresh Complete",
+            description: `Trip data updated at ${new Date().toLocaleTimeString()}`,
+        })
+    }, 1500);
+  }
+
+  const handleTripCreated = (newTrip: any) => {
+    // In a real app, you'd likely invalidate a query cache (e.g., React Query)
+    // and let it refetch the data from the server.
+    // For this simulation, we'll just show a toast.
+    toast({
+      title: "Trip Scheduled",
+      description: `New trip for bus ${newTrip.bus} on route ${newTrip.route} has been scheduled.`,
+    });
+    setIsScheduleOpen(false);
+  };
 
   const navItems = [
     { name: "Home", icon: Home, href: "/dashboard" },
@@ -242,8 +275,11 @@ export default function TripsPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                     <Button variant="outline"><RefreshCw className="mr-2 h-4 w-4"/>Force Refresh</Button>
-                     <Button><Plus className="mr-2 h-4 w-4"/>Schedule New Trip</Button>
+                     <Button variant="outline" onClick={handleRefresh} disabled={isRefreshing}>
+                        {isRefreshing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4"/>}
+                        Force Refresh
+                     </Button>
+                     <Button onClick={() => setIsScheduleOpen(true)}><Plus className="mr-2 h-4 w-4"/>Schedule New Trip</Button>
                 </div>
             </div>
 
@@ -381,7 +417,14 @@ export default function TripsPage() {
             <Button variant="outline" className="text-destructive-foreground border-destructive-foreground/50 hover:bg-destructive-foreground/10">Call All Drivers</Button>
           </div>
         </footer>
+         <ScheduleTripDialog
+            open={isScheduleOpen}
+            onClose={() => setIsScheduleOpen(false)}
+            onCreated={handleTripCreated}
+        />
       </SidebarInset>
     </SidebarProvider>
   );
 }
+
+    
