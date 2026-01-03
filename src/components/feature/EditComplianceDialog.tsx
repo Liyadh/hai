@@ -59,6 +59,15 @@ const complianceTypes = [
   { id: "Tax", name: "Tax Receipt" },
 ];
 
+// Helper to convert DD/MM/YYYY to YYYY-MM-DD
+const parseDate = (dateString: string) => {
+    if (!/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        return ''; // Return empty if format is not DD/MM/YYYY
+    }
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month}-${day}`;
+}
+
 export function EditComplianceDialog({ open, onClose, busId, compliance, onUpdated }: EditComplianceDialogProps) {
   const {
     register,
@@ -78,8 +87,8 @@ export function EditComplianceDialog({ open, onClose, busId, compliance, onUpdat
         if (key) {
           (acc as any)[key] = {
             number: doc.certNo,
-            issueDate: doc.issueDate ? new Date(doc.issueDate).toISOString().split('T')[0] : '',
-            expiryDate: doc.validTill ? new Date(doc.validTill).toISOString().split('T')[0] : '',
+            issueDate: doc.issueDate ? parseDate(doc.issueDate) : '',
+            expiryDate: doc.validTill ? parseDate(doc.validTill) : '',
           };
         }
         return acc;
@@ -135,10 +144,12 @@ export function EditComplianceDialog({ open, onClose, busId, compliance, onUpdat
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <Button variant="outline" component="label">
-                    <UploadCloud className="mr-2 h-4 w-4" />
-                    {selectedFiles[docType.id] ? "Change File" : "Upload File"}
-                    <input type="file" hidden onChange={handleFileChange(docType.id)} accept="application/pdf,image/*" />
+                  <Button type="button" variant="outline" asChild>
+                    <Label className="cursor-pointer">
+                      <UploadCloud className="mr-2 h-4 w-4" />
+                      {selectedFiles[docType.id] ? "Change File" : "Upload File"}
+                      <input type="file" hidden onChange={handleFileChange(docType.id)} accept="application/pdf,image/*" />
+                    </Label>
                   </Button>
                   <div className="text-sm text-muted-foreground">
                     {selectedFiles[docType.id]
@@ -165,6 +176,3 @@ export function EditComplianceDialog({ open, onClose, busId, compliance, onUpdat
     </Dialog>
   );
 }
-
-
-    
