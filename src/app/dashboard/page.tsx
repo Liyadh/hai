@@ -21,6 +21,7 @@ import {
   User,
   Users,
   FileText,
+  Loader2
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -40,6 +41,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
@@ -157,6 +162,7 @@ export default function DashboardPage() {
   const pathname = usePathname();
   const alertsRef = React.useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -166,6 +172,21 @@ export default function DashboardPage() {
       }
     }
   }, []);
+  
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    toast({
+        title: "Updating Buses...",
+        description: "Requesting fresh GPS data from all drivers.",
+    });
+    setTimeout(() => {
+        setIsRefreshing(false);
+        toast({
+            title: "Refresh Complete",
+            description: `Bus data updated at ${new Date().toLocaleTimeString()}`,
+        })
+    }, 1500);
+  }
 
   const handleAlertsClick = () => {
     alertsRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -333,11 +354,29 @@ export default function DashboardPage() {
                   </CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <Filter className="mr-2 h-4 w-4" /> Filter
-                  </Button>
-                  <Button variant="outline" size="icon" className="h-8 w-8">
-                    <RefreshCw className="h-4 w-4" />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                         <Button variant="outline" size="sm">
+                            <Filter className="mr-2 h-4 w-4" /> Filter
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>Show Buses</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuCheckboxItem checked>All Buses (12)</DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem>Active/Running (5)</DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem>Maintenance (3)</DropdownMenuCheckboxItem>
+                           <DropdownMenuLabel>Status Filter</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuCheckboxItem checked>On-Time (3)</DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem>Late (2)</DropdownMenuCheckboxItem>
+                          <DropdownMenuCheckboxItem>Stopped (0)</DropdownMenuCheckboxItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem>Reset Filters</DropdownMenuItem>
+                      </DropdownMenuContent>
+                  </DropdownMenu>
+                  <Button variant="outline" size="icon" className="h-8 w-8" onClick={handleRefresh} disabled={isRefreshing}>
+                    {isRefreshing ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
                   </Button>
                 </div>
               </CardHeader>
@@ -415,3 +454,5 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+
+    
