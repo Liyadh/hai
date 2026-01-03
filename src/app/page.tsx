@@ -11,6 +11,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  Bus
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -49,6 +50,7 @@ const forgotPasswordSchema = z.object({
 
 export default function LoginPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [error, setError] = React.useState<string | null>(null);
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = React.useState<string | null>(null);
 
@@ -90,12 +92,16 @@ export default function LoginPage() {
         throw new Error(data.message || "An unexpected error occurred.");
       }
 
-      // Handle success
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${data.user.name}!`,
+      });
+
       if (typeof window !== 'undefined') {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
       }
-      router.push("/dashboard"); // Redirect to dashboard
+      router.push("/dashboard"); 
     } catch (err: any) {
       setError(err.message);
     }
@@ -114,25 +120,25 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-screen w-full font-body">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1e3a8a] via-[#3b82f6] to-[#1e40af] bg-[length:400%_400%] animate-gradient-animation -z-20" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-blue-500 to-accent bg-[length:200%_200%] animate-gradient-animation -z-20" />
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,hsl(var(--primary-foreground)_/_0.1)_1px,transparent_0)] bg-[length:2rem_2rem] opacity-30 -z-10" />
 
-      <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 animate-in fade-in-0 slide-in-from-bottom-12 duration-600 ease-out">
-        <div className="w-full max-w-md bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl p-8 sm:p-12 animate-in">
+      <main className="min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md bg-card/80 backdrop-blur-lg rounded-2xl shadow-2xl p-8 sm:p-12 border animate-in fade-in-0 slide-in-from-bottom-12 duration-500 ease-out">
           <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-blue-500 flex items-center justify-center mb-4">
-              <Mail className="w-8 h-8 text-primary-foreground" />
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-4 shadow-lg">
+              <Bus className="w-10 h-10 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-500 bg-clip-text text-transparent">
-              Bus Dashboard
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              West Gudur Admin
             </h1>
             <p className="text-muted-foreground mt-2">
-              Sign in to your admin account
+              Sign in to the Bus Management Dashboard
             </p>
           </div>
 
           {error && (
-            <Alert variant="destructive" className="mb-6 animate-in fade-in-0 slide-in-from-top-4">
+            <Alert variant="destructive" className="mb-6 animate-in fade-in-0">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -147,12 +153,12 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email Address</FormLabel>
                     <div className="relative">
-                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                        <FormControl>
                           <Input
                             type="email"
                             placeholder="admin@college.edu"
-                            className="h-14 pl-12 text-base"
+                            className="h-12 pl-11"
                             {...field}
                           />
                        </FormControl>
@@ -168,12 +174,12 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <div className="relative">
-                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                        <FormControl>
                           <Input
                             type="password"
                             placeholder="••••••••"
-                            className="h-14 pl-12 text-base"
+                            className="h-12 pl-11"
                             {...field}
                           />
                        </FormControl>
@@ -188,14 +194,14 @@ export default function LoginPage() {
                   control={form.control}
                   name="rememberMe"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="font-normal text-muted-foreground">
+                      <FormLabel className="font-normal">
                         Remember me
                       </FormLabel>
                     </FormItem>
@@ -203,7 +209,7 @@ export default function LoginPage() {
                 />
                  <Dialog>
                   <DialogTrigger asChild>
-                    <Button variant="link" className="p-0 h-auto text-sm font-medium">Forgot Password?</Button>
+                    <Button variant="link" className="p-0 h-auto text-sm font-medium text-primary">Forgot Password?</Button>
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -213,19 +219,19 @@ export default function LoginPage() {
                       </DialogDescription>
                     </DialogHeader>
                     {forgotPasswordSuccess ? (
-                      <Alert variant="default" className="bg-green-100 border-green-300 text-green-800">
+                      <Alert className="border-green-500/50 text-green-500 [&>svg]:text-green-500">
                          <CheckCircle className="h-4 w-4" />
                          <AlertDescription>{forgotPasswordSuccess}</AlertDescription>
                       </Alert>
                     ) : (
                       <Form {...forgotPasswordForm}>
-                        <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-4">
+                        <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="grid gap-4 py-4">
                            <FormField
                             control={forgotPasswordForm.control}
                             name="email"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Email Address</FormLabel>
+                                <FormLabel>Email</FormLabel>
                                 <FormControl>
                                   <Input type="email" placeholder="your.email@example.com" {...field} />
                                 </FormControl>
@@ -250,29 +256,17 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full h-14 text-base font-semibold transition-all duration-300 transform hover:-translate-y-px hover:shadow-lg active:scale-[0.98] active:shadow-sm"
+                className="w-full h-12 text-base font-semibold"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Signing In...
-                  </>
+                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 ) : (
-                  <>
-                    <CheckCircle className="mr-2 h-5 w-5" />
-                    Sign In
-                  </>
+                  "Sign In"
                 )}
               </Button>
             </form>
           </Form>
-
-          <div className="mt-8 text-center">
-            <p className="text-xs text-muted-foreground">
-              v1.0.0 | Support: +91-XXXXXXX
-            </p>
-          </div>
         </div>
       </main>
     </div>
