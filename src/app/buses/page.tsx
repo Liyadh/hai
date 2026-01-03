@@ -110,11 +110,19 @@ const busSchema = z.object({
   model: z.string().min(1, "Model/Year is required."),
   driver: z.string().optional(),
   helper: z.string().optional(),
-  status: z.enum(["Active", "Maintenance", "Inactive"]),
-  availableFrom: z.date().optional(),
 });
 
-type Bus = z.infer<typeof busSchema>;
+const updateStatusSchema = z.object({
+  busId: z.string().min(1, "Please select a bus."),
+  newStatus: z.enum(["Active", "Maintenance", "Inactive"]),
+  reason: z.string().min(10, "Reason must be at least 10 characters long."),
+  effectiveFrom: z.date().optional(),
+});
+
+
+type Bus = z.infer<typeof busSchema> & { status: "Active" | "Maintenance" | "Inactive" };
+type UpdateStatus = z.infer<typeof updateStatusSchema>;
+
 
 const sampleBuses: (Bus & { id: number; lastTrip: string })[] = [
   { id: 1, busNo: "AP01AB1234", capacity: 50, driver: "Raj Kumar", status: "Active", regNo: "AP01AB1234", lastTrip: "Today 4:30PM", model: "2022 Ashok Leyland" },
@@ -129,12 +137,19 @@ export default function BusesPage() {
   const pathname = usePathname();
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingBus, setEditingBus] = React.useState<Bus & { id: number } | null>(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = React.useState(false);
+  const [statusBus, setStatusBus] = React.useState<(Bus & { id: number }) | null>(null);
+
 
   const form = useForm<Bus>({
     resolver: zodResolver(busSchema),
     defaultValues: {
       status: "Active",
     },
+  });
+
+  const statusForm = useForm<UpdateStatus>({
+    resolver: zodResolver(updateStatusSchema),
   });
 
   React.useEffect(() => {
@@ -154,10 +169,33 @@ export default function BusesPage() {
     }
   }, [isModalOpen, editingBus, form]);
 
+   React.useEffect(() => {
+    if (isStatusModalOpen && statusBus) {
+      statusForm.reset({
+        busId: String(statusBus.id),
+        newStatus: statusBus.status,
+      });
+    } else if (!isStatusModalOpen) {
+      statusForm.reset({
+        busId: "",
+        reason: "",
+      });
+      setStatusBus(null);
+    }
+  }, [isStatusModalOpen, statusBus, statusForm]);
+
   const onSubmit = (values: Bus) => {
     console.log("Form submitted", values);
-    // TODO: API call to add/edit bus
+    // On create, status is always active
+    const payload = editingBus ? values : { ...values, status: 'Active' };
+    console.log("Payload sent to API:", payload);
     setIsModalOpen(false);
+  };
+
+  const onStatusSubmit = (values: UpdateStatus) => {
+    console.log("Status form submitted", values);
+    // TODO: API call to update bus status
+    setIsStatusModalOpen(false);
   };
   
   React.useEffect(() => {
@@ -194,6 +232,13 @@ export default function BusesPage() {
     setEditingBus(bus);
     setIsModalOpen(true);
   };
+
+  const handleStatusClick = (bus: (Bus & { id: number }) | null) => {
+    setStatusBus(bus);
+    setIsStatusModalOpen(true);
+  };
+  
+  const selectedBusForStatus = sampleBuses.find(b => String(b.id) === statusForm.watch('busId'));
   
   return (
     <SidebarProvider>
@@ -287,101 +332,163 @@ export default function BusesPage() {
               <h1 className="text-3xl font-bold">Bus Fleet Management</h1>
               <p className="text-muted-foreground">Manage all college buses and assignments</p>
             </div>
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              <DialogTrigger asChild>
-                <Button size="lg" onClick={() => setIsModalOpen(true)}>
-                  <PlusCircle className="mr-2 h-5 w-5" /> Add New Bus
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px]">
-                <DialogHeader>
-                  <DialogTitle>{editingBus ? "Edit Bus" : "Add New Bus"}</DialogTitle>
-                  <DialogDescription>
-                    {editingBus
-                      ? `Update details for bus ${editingBus.busNo}`
-                      : "Fill in the details to add a new bus to the fleet."}
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium">Basic Info</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField control={form.control} name="busNo" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Bus No.</FormLabel>
-                            <FormControl>
-                              <Input placeholder="AP01ABXXXX" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="capacity" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Capacity</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="50" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="regNo" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Registration No.</FormLabel>
-                            <FormControl>
-                              <Input placeholder="AP01AB1234" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
-                        <FormField control={form.control} name="model" render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Model/Year</FormLabel>
-                            <FormControl>
-                              <Input placeholder="2022 Ashok Leyland" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )} />
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => handleStatusClick(null)}>
+                Update Bus Status
+              </Button>
+              <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                <DialogTrigger asChild>
+                  <Button size="lg" onClick={() => setIsModalOpen(true)}>
+                    <PlusCircle className="mr-2 h-5 w-5" /> Add New Bus
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px]">
+                  <DialogHeader>
+                    <DialogTitle>{editingBus ? "Edit Bus" : "Add New Bus"}</DialogTitle>
+                    <DialogDescription>
+                      {editingBus
+                        ? `Update details for bus ${editingBus.busNo}`
+                        : "Fill in the details to add a new bus. New buses are active by default."}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Basic Info</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField control={form.control} name="busNo" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Bus No.</FormLabel>
+                              <FormControl>
+                                <Input placeholder="AP01ABXXXX" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="capacity" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Capacity</FormLabel>
+                              <FormControl>
+                                <Input type="number" placeholder="50" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="regNo" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Registration No.</FormLabel>
+                              <FormControl>
+                                <Input placeholder="AP01AB1234" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="model" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Model/Year</FormLabel>
+                              <FormControl>
+                                <Input placeholder="2022 Ashok Leyland" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                        </div>
                       </div>
-                    </div>
-                    <div className="space-y-4">
-                       <h3 className="text-lg font-medium">Driver Assignment</h3>
-                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <FormField control={form.control} name="driver" render={({ field }) => (
-                           <FormItem>
-                            <FormLabel>Primary Driver</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <div className="space-y-4">
+                         <h3 className="text-lg font-medium">Driver Assignment</h3>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                           <FormField control={form.control} name="driver" render={({ field }) => (
+                             <FormItem>
+                              <FormLabel>Primary Driver</FormLabel>
+                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                 <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a driver" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="Raj Kumar">Raj Kumar</SelectItem>
+                                  <SelectItem value="Suresh Kumar">Suresh Kumar</SelectItem>
+                                  <SelectItem value="Unassigned">Unassigned</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                             </FormItem>
+                           )} />
+                           <FormField control={form.control} name="helper" render={({ field }) => (
+                             <FormItem>
+                               <FormLabel>Helper (Optional)</FormLabel>
                                <FormControl>
+                                 <Input placeholder="Helper name" {...field} />
+                               </FormControl>
+                               <FormMessage />
+                             </FormItem>
+                           )} />
+                         </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                          <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                          <Button type="submit" disabled={form.formState.isSubmitting}>
+                            {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Save Changes
+                          </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={isStatusModalOpen} onOpenChange={setIsStatusModalOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Update Bus Status</DialogTitle>
+                    <DialogDescription>
+                      Select a bus and update its current status with a reason.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...statusForm}>
+                    <form onSubmit={statusForm.handleSubmit(onStatusSubmit)} className="space-y-6">
+                      <FormField
+                        control={statusForm.control}
+                        name="busId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bus</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={!!statusBus}>
+                              <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select a driver" />
+                                  <SelectValue placeholder="Select a bus" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="Raj Kumar">Raj Kumar</SelectItem>
-                                <SelectItem value="Suresh Kumar">Suresh Kumar</SelectItem>
-                                <SelectItem value="Unassigned">Unassigned</SelectItem>
+                                {sampleBuses.map(bus => (
+                                  <SelectItem key={bus.id} value={String(bus.id)}>{bus.busNo} - {bus.regNo}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
-                           </FormItem>
-                         )} />
-                         <FormField control={form.control} name="helper" render={({ field }) => (
-                           <FormItem>
-                             <FormLabel>Helper (Optional)</FormLabel>
-                             <FormControl>
-                               <Input placeholder="Helper name" {...field} />
-                             </FormControl>
-                             <FormMessage />
-                           </FormItem>
-                         )} />
-                       </div>
-                    </div>
-                     <div className="space-y-4">
-                       <h3 className="text-lg font-medium">Status &amp; Availability</h3>
-                        <FormField control={form.control} name="status" render={({ field }) => (
-                           <FormItem className="space-y-3">
-                            <FormLabel>Status</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      {selectedBusForStatus && (
+                         <FormItem>
+                          <FormLabel>Current Status</FormLabel>
+                           <Badge variant={selectedBusForStatus.status === 'Maintenance' ? 'default' : selectedBusForStatus.status === 'Inactive' ? 'secondary' : 'default'}
+                            className={cn(
+                                {'bg-green-500 text-white hover:bg-green-600': selectedBusForStatus.status === 'Active'},
+                                {'bg-yellow-500 text-white hover:bg-yellow-600': selectedBusForStatus.status === 'Maintenance'},
+                                {'bg-gray-500 text-white hover:bg-gray-600': selectedBusForStatus.status === 'Inactive'}
+                            )}>
+                              {selectedBusForStatus.status}
+                           </Badge>
+                         </FormItem>
+                      )}
+                      <FormField
+                        control={statusForm.control}
+                        name="newStatus"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormLabel>New Status</FormLabel>
                             <FormControl>
                               <div className="flex gap-2">
                                 {(["Active", "Maintenance", "Inactive"] as const).map((status) => (
@@ -389,7 +496,7 @@ export default function BusesPage() {
                                     key={status}
                                     type="button"
                                     variant={field.value === status ? "default" : "outline"}
-                                    onClick={() => form.setValue("status", status)}
+                                    onClick={() => statusForm.setValue("newStatus", status)}
                                     className={cn("flex-1 justify-start", {
                                       "bg-green-100 border-green-300 text-green-800 hover:bg-green-200": field.value === status && status === "Active",
                                       "bg-yellow-100 border-yellow-300 text-yellow-800 hover:bg-yellow-200": field.value === status && status === "Maintenance",
@@ -407,20 +514,38 @@ export default function BusesPage() {
                               </div>
                             </FormControl>
                             <FormMessage />
-                           </FormItem>
-                         )} />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                        <Button type="submit" disabled={form.formState.isSubmitting}>
-                          {form.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                          Save Changes
+                          </FormItem>
+                        )}
+                      />
+                       <FormField
+                        control={statusForm.control}
+                        name="reason"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Reason for Status Change</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Example: Scheduled service, accident repair, bus retired, etc."
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button type="button" variant="ghost" onClick={() => setIsStatusModalOpen(false)}>Cancel</Button>
+                        <Button type="submit" disabled={statusForm.formState.isSubmitting}>
+                          {statusForm.formState.isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                          Update Status
                         </Button>
-                    </div>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+
+            </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
@@ -532,6 +657,10 @@ export default function BusesPage() {
                               <DropdownMenuItem onClick={() => handleEditClick(bus)}>
                                 <FilePen className="mr-2 h-4 w-4" />
                                 Edit Bus
+                              </DropdownMenuItem>
+                               <DropdownMenuItem onClick={() => handleStatusClick(bus)}>
+                                <RefreshCw className="mr-2 h-4 w-4" />
+                                Update Status
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem className="text-red-500">
