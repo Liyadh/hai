@@ -4,23 +4,45 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Bus,
   ChevronDown,
+  Clock,
+  Edit,
+  Globe,
   Home,
+  Map,
   MapPin,
-  Route,
+  MoreVertical,
+  PlusCircle,
+  Route as RouteIcon,
   Search,
   Settings,
+  Trash2,
   TrendingUp,
   User,
   Users,
 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -28,8 +50,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -45,8 +65,30 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
-export default function PlaceholderPage() {
+const sampleRoutes = [
+    { id: 1, name: "Gudur Main → College", status: "Active", stops: 12, distance: "28.5 km", duration: "75 min" },
+    { id: 2, name: "Rural Area → College", status: "Scheduled", stops: 15, distance: "35.2 km", duration: "90 min" },
+    { id: 3, name: "City Center → College", status: "Inactive", stops: 8, distance: "15.0 km", duration: "45 min" },
+];
+
+const sampleStops = [
+    { id: 1, name: "Gudur Bus Stand", distance: "0 km", cumulative: "0 km", time: "06:30 AM", wait: "2 min" },
+    { id: 2, name: "Gandhi Circle", distance: "2.3 km", cumulative: "2.3 km", time: "06:35 AM", wait: "3 min" },
+    { id: 3, name: "Rural Village", distance: "8.1 km", cumulative: "10.4 km", time: "06:48 AM", wait: "2 min" },
+    { id: 12, name: "College Gate", distance: "3.2 km", cumulative: "28.5 km", time: "07:45 AM", wait: "-" },
+]
+
+export default function RoutesPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
 
@@ -63,7 +105,7 @@ export default function PlaceholderPage() {
     { name: "Home", icon: Home, href: "/dashboard" },
     { name: "Buses", icon: Bus, href: "/buses" },
     { name: "Drivers", icon: User, href: "/drivers" },
-    { name: "Routes", icon: Route, href: "/routes" },
+    { name: "Routes", icon: RouteIcon, href: "/routes" },
     { name: "Students", icon: Users, href: "/students" },
     { name: "Trips", icon: MapPin, href: "/trips" },
     { name: "Bus Details", icon: Bus, href: "/bus-details" },
@@ -79,8 +121,6 @@ export default function PlaceholderPage() {
       .join("")
       .toUpperCase();
   };
-
-  const pageTitle = navItems.find(item => item.href === pathname)?.name || "Page";
 
   return (
     <SidebarProvider>
@@ -121,14 +161,14 @@ export default function PlaceholderPage() {
         <header className="sticky top-0 z-10 flex h-14 items-center justify-between gap-4 border-b bg-background px-4 sm:px-6">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="md:hidden" />
-            <h1 className="text-lg font-semibold md:text-xl">{pageTitle}</h1>
+            <h1 className="text-lg font-semibold md:text-xl">Routes</h1>
           </div>
           <div className="flex flex-1 items-center gap-4">
             <div className="relative ml-auto flex-1 md:grow-0">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="search"
-                placeholder="Search..."
+                placeholder="Search routes or stops..."
                 className="w-full rounded-lg bg-muted pl-8 md:w-[200px] lg:w-[320px]"
               />
             </div>
@@ -168,16 +208,121 @@ export default function PlaceholderPage() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 md:p-6">
-            <div className="flex items-center justify-center h-full">
-                <Card className="w-full max-w-lg">
-                    <CardHeader>
-                        <CardTitle className="text-2xl">Page Under Construction</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">The '{pageTitle}' page is currently being built. Please check back later.</p>
-                    </CardContent>
-                </Card>
+        <main className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b">
+                <div>
+                    <h1 className="text-2xl font-bold">Route Management</h1>
+                    <p className="text-sm text-muted-foreground">Manage all college bus routes and stops.</p>
+                </div>
+                <Button size="sm">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Route
+                </Button>
+            </div>
+            <div className="flex flex-1 overflow-hidden">
+                {/* Left Panel */}
+                <div className="w-full md:w-2/5 lg:w-1/3 border-r overflow-y-auto">
+                    <Card className="rounded-none border-0 border-b">
+                        <CardHeader>
+                            <CardTitle>Routes List</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                             <Accordion type="single" collapsible defaultValue="item-1">
+                                {sampleRoutes.map(route => (
+                                    <AccordionItem value={`item-${route.id}`} key={route.id}>
+                                        <AccordionTrigger className="font-medium">
+                                            <div className="flex items-center gap-3">
+                                                <Badge variant={route.status === 'Active' ? 'default' : 'secondary'} className={cn(
+                                                    {'bg-green-500 hover:bg-green-600': route.status === 'Active'},
+                                                    {'bg-yellow-500 hover:bg-yellow-600': route.status === 'Scheduled'},
+                                                    {'bg-gray-500 hover:bg-gray-600': route.status === 'Inactive'}
+                                                )}>
+                                                    {route.status}
+                                                </Badge>
+                                                <span>{route.name}</span>
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="space-y-3">
+                                             <div className="flex justify-between text-sm text-muted-foreground px-2">
+                                                <span>{route.stops} stops</span>
+                                                <span>{route.distance}</span>
+                                                <span>{route.duration}</span>
+                                            </div>
+                                             <div className="flex gap-2">
+                                                <Button variant="outline" size="sm" className="w-full">
+                                                    <Edit className="h-3 w-3 mr-2" /> Edit
+                                                </Button>
+                                                <Button variant="outline" size="icon" className="h-8 w-8">
+                                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                                </Button>
+                                             </div>
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                ))}
+                            </Accordion>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Right Panel */}
+                <div className="hidden md:flex flex-1 flex-col overflow-hidden">
+                    <div className="flex-1 bg-muted flex items-center justify-center relative">
+                        <Map className="w-32 h-32 text-muted-foreground" />
+                         <p className="absolute bottom-4 text-muted-foreground text-sm">Interactive map will be displayed here</p>
+                    </div>
+                     <div className="border-t">
+                        <CardHeader>
+                             <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Route Details: Gudur Main → College</CardTitle>
+                                    <CardDescription>Drag and drop stops to reorder.</CardDescription>
+                                </div>
+                                <Select defaultValue="AP01AB1234">
+                                  <SelectTrigger className="w-[180px]">
+                                    <SelectValue placeholder="Assign Bus" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="AP01AB1234">Bus AP01AB1234</SelectItem>
+                                    <SelectItem value="AP01AB5678">Bus AP01AB5678</SelectItem>
+                                    <SelectItem value="unassigned">Unassigned</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                             </div>
+                        </CardHeader>
+                        <CardContent>
+                             <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>#</TableHead>
+                                    <TableHead>Stop Name</TableHead>
+                                    <TableHead>Distance</TableHead>
+                                    <TableHead>Cumulative</TableHead>
+                                    <TableHead>Est. Time</TableHead>
+                                    <TableHead>Avg Wait</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {sampleStops.map(stop => (
+                                        <TableRow key={stop.id}>
+                                            <TableCell>{stop.id}</TableCell>
+                                            <TableCell className="font-medium">{stop.name}</TableCell>
+                                            <TableCell>{stop.distance}</TableCell>
+                                            <TableCell>{stop.cumulative}</TableCell>
+                                            <TableCell>{stop.time}</TableCell>
+                                            <TableCell>{stop.wait}</TableCell>
+                                            <TableCell className="text-right">
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                     </div>
+                </div>
             </div>
         </main>
       </SidebarInset>
