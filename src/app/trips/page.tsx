@@ -184,7 +184,7 @@ export default function TripsPage() {
           <div className="flex h-10 items-center justify-center gap-2">
             <Bus className="h-6 w-6 text-primary-foreground" />
             <span className="text-lg font-semibold text-primary-foreground group-data-[collapsible=icon]:hidden">
-              Bus Dashboard
+              NBKR
             </span>
           </div>
         </SidebarHeader>
@@ -427,4 +427,5 @@ export default function TripsPage() {
   );
 }
 
+    
     
