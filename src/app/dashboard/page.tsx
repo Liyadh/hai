@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -274,7 +275,7 @@ export default function DashboardPage() {
               value="78%"
               secondaryValue="Fleet average"
               icon={Users}
-              iconBgColor-="bg-green-500"
+              iconBgColor="bg-green-500"
               trend="+5%"
               trendDirection="up"
             />
@@ -379,3 +380,6 @@ export default function DashboardPage() {
     </SidebarProvider>
   );
 }
+
+
+    
