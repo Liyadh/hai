@@ -63,6 +63,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+
 
 type KpiCardProps = {
   title: string;
@@ -72,7 +74,8 @@ type KpiCardProps = {
   trend?: string;
   trendDirection?: "up" | "down";
   iconBgColor: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
 };
 
 function KpiCard({
@@ -84,48 +87,61 @@ function KpiCard({
   trendDirection,
   iconBgColor,
   href,
+  onClick,
 }: KpiCardProps) {
-  return (
-    <Link href={href} className="block">
-        <Card className="transition-all hover:scale-[1.02] hover:shadow-md">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-            {title}
-            </CardTitle>
-            <div
-            className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg",
-                iconBgColor
-            )}
+  const CardContentComponent = () => (
+    <Card className="transition-all hover:scale-[1.02] hover:shadow-md h-full">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        <div
+          className={cn(
+            "flex h-8 w-8 items-center justify-center rounded-lg",
+            iconBgColor
+          )}
+        >
+          <Icon className="h-5 w-5 text-white" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="text-3xl font-bold">{value}</div>
+        <p className="text-xs text-muted-foreground">{secondaryValue}</p>
+        {trend && (
+          <div className="mt-2 flex items-center gap-1 text-xs">
+            <span
+              className={cn(
+                "flex items-center gap-1",
+                trendDirection === "up" ? "text-green-600" : "text-red-600"
+              )}
             >
-            <Icon className="h-5 w-5 text-white" />
-            </div>
-        </CardHeader>
-        <CardContent>
-            <div className="text-3xl font-bold">{value}</div>
-            <p className="text-xs text-muted-foreground">{secondaryValue}</p>
-            {trend && (
-            <div className="mt-2 flex items-center gap-1 text-xs">
-                <span
+              <ArrowUp
                 className={cn(
-                    "flex items-center gap-1",
-                    trendDirection === "up" ? "text-green-600" : "text-red-600"
+                  "h-4 w-4",
+                  trendDirection === "down" && "rotate-180"
                 )}
-                >
-                <ArrowUp
-                    className={cn(
-                    "h-4 w-4",
-                    trendDirection === "down" && "rotate-180"
-                    )}
-                />
-                {trend}
-                </span>
-                <span className="text-muted-foreground">this week</span>
-            </div>
-            )}
-        </CardContent>
-        </Card>
-    </Link>
+              />
+              {trend}
+            </span>
+            <span className="text-muted-foreground">this week</span>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className="block">
+        <CardContentComponent />
+      </Link>
+    );
+  }
+
+  return (
+    <div onClick={onClick} className="cursor-pointer">
+      <CardContentComponent />
+    </div>
   );
 }
 
@@ -139,6 +155,8 @@ const alerts = [
 export default function DashboardPage() {
   const [user, setUser] = React.useState<{ name: string; email: string; role: string } | null>(null);
   const pathname = usePathname();
+  const alertsRef = React.useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   React.useEffect(() => {
     if (typeof window !== "undefined") {
@@ -149,6 +167,14 @@ export default function DashboardPage() {
     }
   }, []);
 
+  const handleAlertsClick = () => {
+    alertsRef.current?.scrollIntoView({ behavior: "smooth" });
+    toast({
+      title: "Showing 2 Critical Alerts",
+      description: "The most urgent issues are highlighted below.",
+    });
+  };
+  
   const navItems = [
     { name: "Home", icon: Home, href: "/dashboard" },
     { name: "Buses", icon: Bus, href: "/buses" },
@@ -275,7 +301,7 @@ export default function DashboardPage() {
               secondaryValue="1 critical, 1 warning"
               icon={Siren}
               iconBgColor="bg-yellow-500"
-              href="#"
+              onClick={handleAlertsClick}
             />
             <KpiCard
               title="Avg Occupancy"
@@ -327,7 +353,7 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card ref={alertsRef}>
               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="flex flex-col">
                   <CardTitle>Recent Alerts</CardTitle>
@@ -357,7 +383,7 @@ export default function DashboardPage() {
                   </TableHeader>
                   <TableBody>
                     {alerts.map((alert) => (
-                      <TableRow key={alert.id}>
+                      <TableRow key={alert.id} className={cn(alert.status === 'critical' && 'bg-red-500/10')}>
                         <TableCell>{alert.time}</TableCell>
                         <TableCell>{alert.busNo}</TableCell>
                         <TableCell>
